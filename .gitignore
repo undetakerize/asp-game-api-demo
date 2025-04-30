@@ -1,0 +1,15 @@
+# Rider
+.idea/
+*.DotSettings.user
+
+# Build output
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+
+# ASP.NET Core secrets
+appsettings.Development.json
+secrets.json
