@@ -76,3 +76,37 @@ dotnet restore
 dotnet build
 dotnet run --project src/API
 </pre>
+
+## Config
+before running you should running set Environment Variables with CLI or your favorite IDE and make your own appsettings.Developement.Json or using appsettings.Json globaly.
+Or 
+<pre>
+launchSetting.json
+</pre>
+<pre>
+..
+"environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production"
+      }
+..
+</pre>
+<pre>
+  {
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Database=dasp;Username=postgres;Password=12345"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "JWT": {
+    "Issuer": "http://localhost:5246",
+    "Audience": "http://localhost:5246",
+    "SigningKey": "T6JzqP7eX9s8dGm2yL1q9Wv5Zr4yX7rL0e8cT1qK3bV9xF7pWq4gY2dN8rK0vH6a"
+  }
+}
+
+</pre>
