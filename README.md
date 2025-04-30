@@ -1,10 +1,10 @@
-<p style="text-align: center">
+<p align="center">
   <img src="net-core-128.png" alt="ASP.NET CORE"/>
 </p>
 
 ---
 
-<p style="text-align: center">
+<p align= "center">
   ASP.NET Core codebase containing example (CRUD, auth, CQRS patterns architecture, etc).
 </p>
 
