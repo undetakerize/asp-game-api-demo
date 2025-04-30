@@ -4,7 +4,6 @@ using GameService.Helpers.Games;
 using GameService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using DTO_UpdateGameDto = GameService.Application.Features.Games.DTO.UpdateGameDto;
-using Games_IGameRepository = GameService.Application.Interfaces.Games.IGameRepository;
 using IGameRepository = GameService.Application.Interfaces.Games.IGameRepository;
 using UpdateGameDto = GameService.Application.Features.Games.DTO.UpdateGameDto;
 
@@ -86,16 +85,9 @@ public class GameRepository(AppDbContext context): IGameRepository
          return game;
     }
 
-    public async Task<Game?> UpdateGameAsync(int id, DTO_UpdateGameDto dto, CancellationToken cancellationToken = default)
+    public async Task<Game?> UpdateGameAsync(int id, UpdateGameDto dto, CancellationToken cancellationToken = default)
     {
-        var game = await context.Game.FirstOrDefaultAsync(g => g.Id == id, cancellationToken);
-        if (game == null) return game;
-        game.Title = dto.Title;
-        game.Description = dto.Description;
-        game.ReleaseDate = dto.ReleaseDate;
-        game.Price = dto.Price;
-        await context.SaveChangesAsync(cancellationToken);
-        return game;
+        throw new NotImplementedException();
     }
 
     public async Task<Game?> DeleteGameAsync(int id, CancellationToken cancellationToken = default)
