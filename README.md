@@ -14,6 +14,7 @@
 This is a sample project for a maintainable game database built with ASP.NET Core. It includes CRUD operations, authentication, pagination, and more.
 
 ---
+
 ## Prepared Requirements
 
 ---
