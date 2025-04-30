@@ -1,5 +1,5 @@
 <p style="text-align: center">
-  <img src="net-core-128.png" alt="ASP.NET CORE"/>
+  <img src="logo-2.png" alt="ASP.NET CORE"/>
 </p>
 
 ---
