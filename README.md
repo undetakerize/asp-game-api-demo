@@ -1,23 +1,20 @@
-<p style="text-align: center">
+<p align= "center">
   <img src="logo-2.png" alt="ASP.NET CORE"/>
 </p>
 
----
+##
 
-<p style="text-align: center">
+<p align= "center">
   ASP.NET Core codebase containing example (CRUD, auth, CQRS patterns architecture, etc).
 </p>
 
----
+##
 
 
-This is a sample project for a maintainable game database built with ASP.NET Core. It includes CRUD operations, authentication, pagination, and more.
-
+#### This is a sample project for a maintainable game database built with ASP.NET Core. It includes CRUD operations, authentication, pagination, and more.
 ---
 
 ## Prepared Requirements
-
----
 This is using ASP .NET Core With:
  - CQRS & [MediaTr](https://github.com/jbogard/MediatR)
    - Clean Architecture / Onion Architecture with elements of DDD.
@@ -30,8 +27,6 @@ This is using ASP .NET Core With:
  - Json Serializer/Deserialize using [Newtonsoft.JSON](https://www.newtonsoft.com/json) and it might be support [EFCore Naming Conventions](https://www.nuget.org/packages/EFCore.NamingConventions) for bind snake, camel , others.
 
 ## The Structure 
-
----
 <pre> 
 /src
 │
