@@ -11,7 +11,7 @@
 ##
 
 
-#### This is a sample project for a maintainable game database built with ASP.NET Core. It includes CRUD operations, authentication, pagination, and more.
+#### This is a sample project for a maintainable store game database with user reviews built with ASP.NET Core. It includes CRUD operations, authentication, pagination, and more.
 ---
 
 ## Prepared Requirements
@@ -67,4 +67,13 @@ This is using ASP .NET Core With:
 │   └── Services (e.g., Email, Logging)
 ├── Middleware
 └── SharedKernel (optional)  → Shared base classes, utilities, interfaces
+</pre>
+
+## Installation/ Running Locals
+<pre>
+git clone https://github.com/undetakerize/asp-game-api-demo.git
+cd API
+dotnet restore
+dotnet build
+dotnet run --project src/API
 </pre>
