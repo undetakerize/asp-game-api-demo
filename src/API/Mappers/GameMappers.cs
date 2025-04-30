@@ -1,3 +1,5 @@
+using System.Globalization;
+using GameService.Application.Features.Games.Command;
 using GameService.Application.Features.Games.DTO;
 using GameService.Domain.Entity.Games;
 using DTO_GameDto = GameService.Application.Features.Games.DTO.GameDto;
@@ -7,7 +9,7 @@ namespace GameService.Mappers
 {
     public static class GameMappers
     {
-        public static DTO_GameDto ToGameDto(this Game gameModel)
+        public static GameDto ToGameDto(this Game gameModel)
         {
             var gameDto = new DTO_GameDto();
             gameDto.WithId(gameModel.Id);
@@ -18,15 +20,35 @@ namespace GameService.Mappers
             return gameDto;
         }
 
-        public static Game ToGameFromCreateDto(this CreateGameDto dto)
+        public static CommandCreateGame ToCommand(this CreateGameDto dto)
         {
-            return new Game
-            {
-                Title = dto.Title,
-                Description = dto.Description,
-                ReleaseDate = dto.ReleaseDate,
-                Price = dto.Price
-            };
+            if (!DateTime.TryParseExact(dto.ReleaseDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
+                throw new ArgumentException("Invalid date format. Use dd/MM/yyyy");
+
+            parsedDate = DateTime.SpecifyKind(parsedDate, DateTimeKind.Utc);
+            
+            return new CommandCreateGame(
+                dto.Title,
+                dto.Description,
+                parsedDate,
+                dto.Price
+            );
+        }
+        
+        public static CommandUpdateGame ToUpdateCommand(this UpdateGameDto dto, int id)
+        {
+            if (!DateTime.TryParseExact(dto.ReleaseDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
+                throw new ArgumentException("Invalid date format. Use dd/MM/yyyy");
+
+            parsedDate = DateTime.SpecifyKind(parsedDate, DateTimeKind.Utc);
+            
+            return new CommandUpdateGame(
+                id,
+                dto.Title,
+                dto.Description,
+                parsedDate,
+                dto.Price
+            );
         }
     } 
 }
