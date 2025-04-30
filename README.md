@@ -20,7 +20,6 @@ This is using ASP .NET Core With:
    - Clean Architecture / Onion Architecture with elements of DDD.
    - Principle of CQRS (Command Query Responsibility Segregation) structure & clean architecture with support MediaTr as mediator call pattern.
  - [Entity Framework Core](https://docs.microsoft.com/en-us/ef/) on SQLite for demo purposes. Can easily be anything else EF Core supports. Open to porting to other ORMs/DBs.
- - [MediaTr](https://github.com/jbogard/MediatR) 
  - JWT Authentication with [Identity Core](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity?view=aspnetcore-9.0&tabs=visual-studio).
  - [Swashbuckle](https://github.com/domaindrivendev/Swashbuckle.AspNetCore) Built in swagger.
  - Integrated with database using [Npgsql](https://www.npgsql.org/)
