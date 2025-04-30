@@ -1,3 +1,5 @@
+using System.Globalization;
+using GameService.Application.Features.Games.Command;
 using GameService.Application.Features.Games.DTO;
 using GameService.Application.Features.Games.Query;
 using GameService.Helpers.Games;
@@ -5,9 +7,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GameService.Mappers;
-using DTO_UpdateGameDto = GameService.Application.Features.Games.DTO.UpdateGameDto;
 using Games_IGameRepository = GameService.Application.Interfaces.Games.IGameRepository;
-using IGameRepository = GameService.Application.Interfaces.Games.IGameRepository;
 using UpdateGameDto = GameService.Application.Features.Games.DTO.UpdateGameDto;
 
 namespace GameService.API.Controller;
@@ -66,23 +66,37 @@ public class GameController : ControllerBase
     [Authorize]
     public async Task<IActionResult> CreateGame([FromBody] CreateGameDto dto)
     {
-        if (!ModelState.IsValid) return BadRequest();
-        var game = dto.ToGameFromCreateDto();
-        await _gameRepository.CreateGameAsync(game);
-        return CreatedAtAction(nameof(GetById), new { id = game.Id }, game.ToGameDto());
+        if(!ModelState.IsValid) return BadRequest();
+        try
+        {
+            var game = await _mediator.Send(dto.ToCommand());
+            if (game == null) return BadRequest("Failed to create game");
+            return CreatedAtAction(nameof(GetById), new { id = game.Id }, game.ToGameDto());
+        }
+        catch (ArgumentException e)
+        {
+            return BadRequest(new { message = e.Message });
+        }
     }
 
     [HttpPut("{id:int}/update")]
     [Authorize]
-    public async Task<IActionResult> UpdateGame([FromRoute] int id, [FromBody] DTO_UpdateGameDto dto)
+    public async Task<IActionResult> UpdateGame([FromRoute] int id, [FromBody] UpdateGameDto dto)
     {
         if (!ModelState.IsValid) return BadRequest();
-        var game = await _gameRepository.UpdateGameAsync(id, dto);
-        if (game == null)
+        try
         {
-            return NotFound();
+            var game = await _mediator.Send(dto.ToUpdateCommand(id));
+            if (game == null)
+            {
+                return NotFound();
+            }
+            return Ok(game.ToGameDto());
         }
-        return Ok(game.ToGameDto());
+        catch (ArgumentException e)
+        {
+            return BadRequest(new { message = e.Message });
+        }
     }
 
     [HttpDelete("{id:int}/delete")]

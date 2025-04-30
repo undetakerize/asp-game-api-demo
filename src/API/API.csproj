@@ -32,7 +32,6 @@
     <ItemGroup>
       <Folder Include="API\" />
       <Folder Include="Application\Common\" />
-      <Folder Include="Application\Features\Games\Command\" />
       <Folder Include="Application\Features\Reviews\Command\" />
       <Folder Include="Application\Features\Reviews\Query\" />
     </ItemGroup>
