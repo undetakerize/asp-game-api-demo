@@ -26,6 +26,7 @@ This is using ASP .NET Core With:
  - Json Serializer/Deserialize using [Newtonsoft.JSON](https://www.newtonsoft.com/json) and it might be support [EFCore Naming Conventions](https://www.nuget.org/packages/EFCore.NamingConventions) for bind snake, camel , others.
 
 ## The Structure 
+The structure of this using clean architecture with principal CQRS
 <pre> 
 /src
 │
@@ -90,10 +91,13 @@ launchSetting.json
       }
 ..
 </pre>
+
+## Example appSettings.Json
+make sure you config the variable of connection db
 <pre>
   {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=dasp;Username=postgres;Password=12345"
+    "DefaultConnection": "Host={localhost:port};Database={database};Username={datbase.username};Password={database.password}"
   },
   "Logging": {
     "LogLevel": {
