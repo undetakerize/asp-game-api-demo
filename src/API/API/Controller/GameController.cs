@@ -1,4 +1,4 @@
-using System.Globalization;
+
 using GameService.Application.Features.Games.Command;
 using GameService.Application.Features.Games.DTO;
 using GameService.Application.Features.Games.Query;
@@ -7,7 +7,6 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GameService.Mappers;
-using Games_IGameRepository = GameService.Application.Interfaces.Games.IGameRepository;
 using UpdateGameDto = GameService.Application.Features.Games.DTO.UpdateGameDto;
 
 namespace GameService.API.Controller;
@@ -16,12 +15,10 @@ namespace GameService.API.Controller;
 [ApiController]
 public class GameController : ControllerBase
 {
-    private readonly Games_IGameRepository _gameRepository;
     private readonly IMediator _mediator;
 
-    public GameController(Games_IGameRepository gameRepository, IMediator mediator)
+    public GameController(IMediator mediator)
     {
-        _gameRepository = gameRepository;
         _mediator = mediator;
     }
     
@@ -104,7 +101,7 @@ public class GameController : ControllerBase
     public async Task<IActionResult> Delete([FromRoute] int id)
     {
         if (!ModelState.IsValid) return BadRequest();
-        var game = await _gameRepository.DeleteGameAsync(id);
+        var game = await _mediator.Send(new CommandDeleteGame(id));
         if (game == null) return NotFound("Game Doesnt exist");
         return Ok(game);
     }
