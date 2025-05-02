@@ -1,10 +1,10 @@
+using GameService.Application.Features.Games.Query;
 using GameService.Application.Interfaces.Reviews;
 using GameService.DTO.Review;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GameService.Mappers;
-using Games_IGameRepository = GameService.Application.Interfaces.Games.IGameRepository;
-using IGameRepository = GameService.Application.Interfaces.Games.IGameRepository;
+using MediatR;
 
 namespace GameService.API.Controller;
 
@@ -13,12 +13,12 @@ namespace GameService.API.Controller;
 public class ReviewController : ControllerBase
 {
     private readonly IReviewRepository _reviewRepository;
-    private readonly IGameRepository _gameRepository;
+    private readonly IMediator _mediator;
 
-    public ReviewController(IReviewRepository reviewRepository, Games_IGameRepository gameRepository)
+    public ReviewController(IReviewRepository reviewRepository, IMediator mediator)
     {
         _reviewRepository = reviewRepository;
-        _gameRepository = gameRepository;
+        _mediator = mediator;
     }
 
     [HttpGet]
@@ -48,7 +48,7 @@ public class ReviewController : ControllerBase
     public async Task<IActionResult> CreateReview(int gameId, [FromBody] CreateReviewDto dto)
     {
         if (!ModelState.IsValid) return BadRequest();
-        if (!await _gameRepository.GameExistsAsync(gameId)) return BadRequest();
+        if (await _mediator.Send(new GetGameByIdQuery(gameId)) == null) return BadRequest();
         var gameReviewDto = dto.ToReviewFromCreateDto(gameId);
         await _reviewRepository.CreateReviewAsync(gameReviewDto.gameReview);
         return CreatedAtAction(nameof(GetByIdReview), new { id = gameReviewDto.review.Id }, gameReviewDto.review.ToReviewDto());

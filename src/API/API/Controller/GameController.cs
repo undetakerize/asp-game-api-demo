@@ -52,7 +52,7 @@ public class GameController : ControllerBase
     public async Task<IActionResult> GetById([FromRoute] int id)
     {
         if (!ModelState.IsValid) return BadRequest();
-        var game = await _mediator.Send(new GetGameByIdQuery{Id = id});
+        var game = await _mediator.Send(new GetGameByIdQuery(id));
         if (game == null) { 
                 return NotFound();
         }

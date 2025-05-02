@@ -3,7 +3,4 @@ using MediatR;
 
 namespace GameService.Application.Features.Games.Query;
 
-public class GetGameByIdQuery : IRequest<Game?>
-{
-    public int? Id { get; set; }
-}
+public record GetGameByIdQuery(int Id) : IRequest<Game?>;
