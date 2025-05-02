@@ -26,7 +26,7 @@ This is using ASP .NET Core With:
  - Json Serializer/Deserialize using [Newtonsoft.JSON](https://www.newtonsoft.com/json) and it might be support [EFCore Naming Conventions](https://www.nuget.org/packages/EFCore.NamingConventions) for bind snake, camel , others.
 
 ## The Structure 
-The structure of this using clean architecture with principal CQRS
+The structure of this using clean architecture with principal CQRS.
 <pre> 
 /src
 │
@@ -70,6 +70,7 @@ The structure of this using clean architecture with principal CQRS
 </pre>
 
 ## Installation/ Running Locals
+Clone the project.
 <pre>
 git clone https://github.com/undetakerize/asp-game-api-demo.git
 cd API
@@ -79,8 +80,8 @@ dotnet run --project src/API
 </pre>
 
 ## Config
-before running you should running set Environment Variables with CLI or your favorite IDE and make your own appsettings.Developement.Json or using appsettings.Json globaly.
-Or 
+Before running you should running set Environment Variables with CLI or your favorite IDE and make your own appsettings.Developement.Json or using appsettings.Json globaly.
+Or config its launchSetting.json (do it with experimental too).
 <pre>
 launchSetting.json
 </pre>
@@ -93,7 +94,7 @@ launchSetting.json
 </pre>
 
 ## Example appSettings.Json
-make sure you config the variable of connection db
+Make sure you config the variable of connection db in appSettings.json / appSettings.Developement.json
 <pre>
   {
   "ConnectionStrings": {
