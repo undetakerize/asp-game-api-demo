@@ -4,9 +4,9 @@ using MediatR;
 
 namespace GameService.Application.Features.Games.Query;
 
-public class GetGameQuery : IRequest<List<Game>>
+public record GetGameQuery : IRequest<List<Game>>
 {
-    public SearchQueryGame SearchQueryGame { get; set; }
+    public readonly SearchQueryGame SearchQueryGame;
 
     public GetGameQuery(SearchQueryGame searchQueryGame)
     {
