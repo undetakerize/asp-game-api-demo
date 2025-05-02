@@ -26,6 +26,7 @@ This is using ASP .NET Core With:
  - Json Serializer/Deserialize using [Newtonsoft.JSON](https://www.newtonsoft.com/json) and it might be support [EFCore Naming Conventions](https://www.nuget.org/packages/EFCore.NamingConventions) for bind snake, camel , others.
 
 ## The Structure 
+The structure of this using clean architecture with principal CQRS.
 <pre> 
 /src
 │
@@ -69,10 +70,48 @@ This is using ASP .NET Core With:
 </pre>
 
 ## Installation/ Running Locals
+Clone the project.
 <pre>
 git clone https://github.com/undetakerize/asp-game-api-demo.git
 cd API
 dotnet restore
 dotnet build
 dotnet run --project src/API
+</pre>
+
+## Config
+Before running you should running set Environment Variables with CLI or your favorite IDE and make your own appsettings.Developement.Json or using appsettings.Json globaly.
+Or config its launchSetting.json (do it with experimental too).
+<pre>
+launchSetting.json
+</pre>
+<pre>
+..
+"environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production"
+      }
+..
+</pre>
+
+## Example appSettings.Json
+Make sure you config the variable of connection db in appSettings.json / appSettings.Developement.json
+<pre>
+  {
+  "ConnectionStrings": {
+    "DefaultConnection": "Host={localhost:port};Database={database};Username={datbase.username};Password={database.password}"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "JWT": {
+    "Issuer": "http://localhost:5246",
+    "Audience": "http://localhost:5246",
+    "SigningKey": "T6JzqP7eX9s8dGm2yL1q9Wv5Zr4yX7rL0e8cT1qK3bV9xF7pWq4gY2dN8rK0vH6a"
+  }
+}
+
 </pre>
