@@ -10,7 +10,6 @@ using GameService.Infrastructure;
 using GameService.Infrastructure.Data;
 using GameService.Infrastructure.Middleware;
 using GameService.Service;
-using IGameRepository = GameService.Application.Interfaces.Games.IGameRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -94,7 +93,6 @@ builder.Services.AddAuthentication(option =>
 builder.Services.AddMediatR(options => options.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
 // scope repository
-builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddHealthChecks().AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!);
