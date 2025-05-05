@@ -1,10 +1,12 @@
 using GameService.Application.Features.Games.Query;
-using GameService.Application.Interfaces.Reviews;
-using GameService.DTO.Review;
+using GameService.Application.Features.Reviews.Command;
+using GameService.Application.Features.Reviews.DTO;
+using GameService.Application.Features.Reviews.Query;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GameService.Mappers;
 using MediatR;
+using CreateReviewDto = GameService.Application.Features.Reviews.DTO.CreateReviewDto;
 
 namespace GameService.API.Controller;
 
@@ -12,12 +14,10 @@ namespace GameService.API.Controller;
 [ApiController]
 public class ReviewController : ControllerBase
 {
-    private readonly IReviewRepository _reviewRepository;
     private readonly IMediator _mediator;
 
-    public ReviewController(IReviewRepository reviewRepository, IMediator mediator)
+    public ReviewController(IMediator mediator)
     {
-        _reviewRepository = reviewRepository;
         _mediator = mediator;
     }
 
@@ -26,7 +26,7 @@ public class ReviewController : ControllerBase
     public async Task<IActionResult> GetAllReviews()
     {
         if (!ModelState.IsValid) return BadRequest();
-        var reviews = await _reviewRepository.GetAllAsync();
+        var reviews = await _mediator.Send(new GetReviewQuery());
         var response = reviews.Select(r => r.ToReviewDto());
         return Ok(response);
     }
@@ -35,7 +35,7 @@ public class ReviewController : ControllerBase
     public async Task<IActionResult> GetByIdReview([FromRoute] int id)
     {
         if (!ModelState.IsValid) return BadRequest();
-        var review = await _reviewRepository.GetByIdAsync(id);
+        var review = await _mediator.Send(new GetReviewByIdQuery(id));
         if (review == null)
         {
             return NotFound();
@@ -50,7 +50,7 @@ public class ReviewController : ControllerBase
         if (!ModelState.IsValid) return BadRequest();
         if (await _mediator.Send(new GetGameByIdQuery(gameId)) == null) return BadRequest();
         var gameReviewDto = dto.ToReviewFromCreateDto(gameId);
-        await _reviewRepository.CreateReviewAsync(gameReviewDto.gameReview);
+        await _mediator.Send(new CommandCreateReview(gameReviewDto.gameReview));
         return CreatedAtAction(nameof(GetByIdReview), new { id = gameReviewDto.review.Id }, gameReviewDto.review.ToReviewDto());
     }
 
@@ -59,9 +59,9 @@ public class ReviewController : ControllerBase
     public async Task<IActionResult> UpdateReview(int id, UpdateReviewDto dto)
     {
         if (!ModelState.IsValid) return BadRequest();
-        var review = await _reviewRepository.UpdateReviewAsync(id, dto);
-        if(review == null) return NotFound();
-        return Ok(review.ToReviewDto());
+        var review = _mediator.Send(new CommandUpdateReview(id, dto.Title, dto.Content));
+        if(await review == null) return NotFound();
+        return Ok(review);
     }
 
     [HttpDelete("{id:int}/delete")]
@@ -69,7 +69,7 @@ public class ReviewController : ControllerBase
     public async Task<IActionResult> DeleteReview(int id)
     {
         if (!ModelState.IsValid) return BadRequest();
-        var review = await _reviewRepository.DeleteReviewAsync(id);
+        var review = await _mediator.Send(new CommandDeleteReview(id));
         if(review == null) return NotFound("Review not found");
         return Ok(review);
     }
