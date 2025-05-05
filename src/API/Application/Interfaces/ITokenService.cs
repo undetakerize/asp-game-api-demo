@@ -1,4 +1,6 @@
-namespace GameService.Domain.Users;
+using GameService.Domain.Users;
+
+namespace GameService.Application.Interfaces;
 
 public interface ITokenService
 {
