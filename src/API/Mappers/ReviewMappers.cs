@@ -1,6 +1,7 @@
 using GameService.Domain.Entity.GameReviews;
 using GameService.Domain.Entity.Reviews;
-using GameService.DTO.Review;
+using CreateReviewDto = GameService.Application.Features.Reviews.DTO.CreateReviewDto;
+using ReviewDto = GameService.Application.Features.Reviews.DTO.ReviewDto;
 
 namespace GameService.Mappers;
 

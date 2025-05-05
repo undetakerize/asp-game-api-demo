@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace GameService.DTO.Review;
+namespace GameService.Application.Features.Reviews.DTO;
 
 public class UpdateReviewDto
 {

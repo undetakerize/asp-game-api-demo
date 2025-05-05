@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Lombok.NET;
 
-namespace GameService.DTO.Review;
+namespace GameService.Application.Features.Reviews.DTO;
 [With]
 public partial class CreateReviewDto
 {

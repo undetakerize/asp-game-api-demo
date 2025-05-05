@@ -1,5 +1,5 @@
-using GameService.DTO.Review;
 using Lombok.NET;
+using ReviewDto = GameService.Application.Features.Reviews.DTO.ReviewDto;
 
 namespace GameService.Application.Features.Games.DTO
 {
