@@ -1,12 +1,11 @@
 using System.Reflection;
-using GameService.Application.Interfaces.Reviews;
+using GameService.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using GameService.Domain.Users;
-using GameService.Infrastructure;
 using GameService.Infrastructure.Data;
 using GameService.Infrastructure.Middleware;
 using GameService.Service;
@@ -93,7 +92,6 @@ builder.Services.AddAuthentication(option =>
 builder.Services.AddMediatR(options => options.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
 // scope repository
-builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddHealthChecks().AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!);
 

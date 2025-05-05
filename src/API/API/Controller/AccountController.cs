@@ -1,10 +1,9 @@
+using GameService.Application.Interfaces;
 using GameService.Domain.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Account_LoginAccountDto = GameService.Application.Common.Account.LoginAccountDto;
 using Account_RegisterAccountDto = GameService.Application.Common.Account.RegisterAccountDto;
-using LoginAccountDto = GameService.Application.Common.Account.LoginAccountDto;
-using RegisterAccountDto = GameService.Application.Common.Account.RegisterAccountDto;
 
 namespace GameService.API.Controller;
 
