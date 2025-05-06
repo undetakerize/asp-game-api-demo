@@ -2,6 +2,7 @@
 using GameService.Application.Features.Games.Command;
 using GameService.Application.Features.Games.DTO;
 using GameService.Application.Features.Games.Query;
+using GameService.Application.Interfaces.Games;
 using GameService.Helpers.Games;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -16,10 +17,12 @@ namespace GameService.API.Controller;
 public class GameController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IGameEventProducer _gameEventProducer;
 
-    public GameController(IMediator mediator)
+    public GameController(IMediator mediator, IGameEventProducer gameEventProducer)
     {
         _mediator = mediator;
+        _gameEventProducer = gameEventProducer;
     }
     
     [HttpGet]
@@ -68,6 +71,7 @@ public class GameController : ControllerBase
         {
             var game = await _mediator.Send(dto.ToCommand());
             if (game == null) return BadRequest("Failed to create game");
+            await _gameEventProducer.PublishGameCreatedAsync(game);
             return CreatedAtAction(nameof(GetById), new { id = game.Id }, game.ToGameDto());
         }
         catch (ArgumentException e)

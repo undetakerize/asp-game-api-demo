@@ -1,3 +1,4 @@
+using GameService.Application.Interfaces;
 using GameService.Domain.Entity.Games;
 using GameService.Infrastructure.Data;
 using MediatR;
