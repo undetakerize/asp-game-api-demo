@@ -7,7 +7,9 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using GameService.Domain.Users;
 using GameService.Infrastructure.Data;
+using GameService.Infrastructure.Kafka;
 using GameService.Infrastructure.Middleware;
+using GameService.Infrastructure.Service;
 using GameService.Service;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -90,6 +92,15 @@ builder.Services.AddAuthentication(option =>
 
 // MediaTr
 builder.Services.AddMediatR(options => options.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+
+//Add Kafka services
+builder.Services.AddKafkaServices(builder.Configuration);
+
+// Configure graceful shutdown with a timeout
+builder.Services.Configure<HostOptions>(options =>
+{
+    options.ShutdownTimeout = TimeSpan.FromSeconds(10); // Give services up to 10 seconds to shut down
+});
 
 // scope repository
 builder.Services.AddScoped<ITokenService, TokenService>();
