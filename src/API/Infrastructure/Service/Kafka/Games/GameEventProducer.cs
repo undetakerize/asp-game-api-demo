@@ -32,8 +32,15 @@ public class GameEventProducer: IGameEventProducer, IDisposable
         /// </summary>
         public async Task PublishGameCreatedAsync(Game game)
         {
-            await PublishMessageAsync(_settings.Topics.GameCreated, game.Id.ToString(), game);
-            _logger.LogInformation("Published game created event for game ID: {GameId}", game.Id);
+            try
+            {
+                await PublishMessageAsync(_settings.Topics.GameCreated, game.Id.ToString(), game);
+                _logger.LogInformation("Published game created event for game ID: {GameId}", game.Id);
+            }
+            catch (KafkaException e)
+            {
+                _logger.LogError(e, "Kafka produce failed. Failing gracefully...");
+            }
         }
 
         /// <summary>
@@ -65,15 +72,21 @@ public class GameEventProducer: IGameEventProducer, IDisposable
             try
             {
                 string serializedMessage = JsonSerializer.Serialize(message);
-                
+
                 var deliveryResult = await _producer.ProduceAsync(topic, new Message<string, string>
                 {
                     Key = key,
                     Value = serializedMessage
                 });
 
-                _logger.LogDebug("Delivered message to {Topic} [partition: {Partition}, offset: {Offset}]", 
+                _logger.LogDebug("Delivered message to {Topic} [partition: {Partition}, offset: {Offset}]",
                     deliveryResult.Topic, deliveryResult.Partition, deliveryResult.Offset);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Kafka produce operation timed out for topic {Topic}", topic);
+                // Consider implementing a retry mechanism or outbox pattern here
+                throw new TimeoutException($"Kafka produce operation timed out for topic {topic}");
             }
             catch (ProduceException<string, string> ex)
             {
