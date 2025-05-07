@@ -23,7 +23,9 @@ public class KafkaClientFactoryService : IKafkaClientFactory, IDisposable
                 Acks = Acks.All,
                 EnableIdempotence = true,
                 MessageSendMaxRetries = 3,
-                RetryBackoffMs = 1000
+                RetryBackoffMs = 1000,
+                MessageTimeoutMs = 5000,  // 5 seconds timeout for message delivery
+                SocketTimeoutMs = 3000    // 3 seconds timeout for socket operations
             };
 
             _logger.LogInformation("Creating Kafka producer with bootstrap servers: {Servers}", _settings.BootstrapServers);
