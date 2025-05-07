@@ -24,6 +24,9 @@ This is using ASP .NET Core With:
  - [Swashbuckle](https://github.com/domaindrivendev/Swashbuckle.AspNetCore) Built in swagger.
  - Integrated with database using [Npgsql](https://www.npgsql.org/)
  - Json Serializer/Deserialize using [Newtonsoft.JSON](https://www.newtonsoft.com/json) and it might be support [EFCore Naming Conventions](https://www.nuget.org/packages/EFCore.NamingConventions) for bind snake, camel , others.
+ - Implemented Unit test with [Moq](https://www.nuget.org/packages/moq/), [NUnit](https://www.nuget.org/packages/nunit), [Ef Core InMemory](https://www.nuget.org/packages/microsoft.entityframeworkcore.inmemory).
+ - Implemented [Confluent Kafka](https://www.nuget.org/packages/confluent.kafka/) with Pre-Configured Base for produce other service or even consume by this apps.
+ - Using validation with [FluentValidation](https://www.nuget.org/packages/FluentValidation) , and behaviors [FluentValidationExtension](https://www.nuget.org/packages/fluentvalidation.dependencyinjectionextensions/)
 
 ## The Structure 
 The structure of this using clean architecture with principal CQRS.
