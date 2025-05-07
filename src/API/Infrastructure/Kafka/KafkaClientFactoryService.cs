@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace GameService.Infrastructure.Kafka;
 
-public class KafkaClientFactoryService : IKafkaClientFactory, IDisposable
+public class KafkaClientFactoryService : IKafkaClientFactory
 {
         private readonly KafkaSettings _settings;
         private readonly ILogger<KafkaClientFactoryService> _logger;
@@ -39,8 +39,8 @@ public class KafkaClientFactoryService : IKafkaClientFactory, IDisposable
             var config = new ConsumerConfig
             {
                 BootstrapServers = _settings.BootstrapServers,
-                GroupId = groupId ?? $"{_settings.GroupId}-{Guid.NewGuid()}",
-                AutoOffsetReset = (AutoOffsetReset)_settings.AutoOffsetResetValue,
+                GroupId = _settings.GroupId,
+                AutoOffsetReset = AutoOffsetReset.Latest,
                 EnableAutoCommit = _settings.EnableAutoCommit,
                 SessionTimeoutMs = _settings.SessionTimeoutMs,
                 MaxPollIntervalMs = 300000, // 5 minutes
@@ -54,10 +54,5 @@ public class KafkaClientFactoryService : IKafkaClientFactory, IDisposable
                 .SetErrorHandler((_, e) => _logger.LogError("Kafka consumer error: {Error}", e.Reason))
                 .Build();
         }
-
-        public void Dispose()
-        {
-            // Cleanup any resources if needed
-            GC.SuppressFinalize(this);
-        }
+    
 }
