@@ -8,6 +8,6 @@ public record CommandCreateGame
 (
     string Title,
     string Description,
-    DateTime ReleaseDate,
+    string? ReleaseDate,
     decimal Price
 ) : IRequest<Game?>;

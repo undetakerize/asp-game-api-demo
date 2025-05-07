@@ -1,4 +1,6 @@
 
+using Confluent.Kafka;
+using FluentValidation;
 using GameService.Application.Features.Games.Command;
 using GameService.Application.Features.Games.DTO;
 using GameService.Application.Features.Games.Query;
@@ -18,11 +20,12 @@ public class GameController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly IGameEventProducer _gameEventProducer;
-
-    public GameController(IMediator mediator, IGameEventProducer gameEventProducer)
+    private readonly ILogger<GameController> _logger;
+    public GameController(IMediator mediator, IGameEventProducer gameEventProducer, ILogger<GameController> logger)
     {
         _mediator = mediator;
         _gameEventProducer = gameEventProducer;
+        _logger = logger;
     }
     
     [HttpGet]
@@ -66,18 +69,18 @@ public class GameController : ControllerBase
     [Authorize]
     public async Task<IActionResult> CreateGame([FromBody] CreateGameDto dto)
     {
-        if(!ModelState.IsValid) return BadRequest();
+        var game = await _mediator.Send(dto.ToCommand());
+        if (game == null) return BadRequest("Failed to create game");
         try
         {
-            var game = await _mediator.Send(dto.ToCommand());
-            if (game == null) return BadRequest("Failed to create game");
             await _gameEventProducer.PublishGameCreatedAsync(game);
-            return CreatedAtAction(nameof(GetById), new { id = game.Id }, game.ToGameDto());
         }
-        catch (ArgumentException e)
+        catch (Exception e) when (e is TimeoutException || e is KafkaException)
         {
-            return BadRequest(new { message = e.Message });
+            // Log the error but don't fail the request
+            _logger.LogError(e, "Failed to publish game created event for game {GameId}. Event will need to be recovered.", game.Id);
         }
+        return CreatedAtAction(nameof(GetById), new { id = game.Id }, game.ToGameDto());
     }
 
     [HttpPut("{id:int}/update")]

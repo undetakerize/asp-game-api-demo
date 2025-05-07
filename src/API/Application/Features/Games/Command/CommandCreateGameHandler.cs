@@ -1,4 +1,4 @@
-using GameService.Application.Interfaces;
+using System.Globalization;
 using GameService.Domain.Entity.Games;
 using GameService.Infrastructure.Data;
 using MediatR;
@@ -9,11 +9,22 @@ public class CommandCreateGameHandler(AppDbContext context) : IRequestHandler<Co
 {
     public async Task<Game?> Handle(CommandCreateGame request, CancellationToken cancellationToken)
     {
+        
+        DateTime? releaseDate = null;
+        if (!string.IsNullOrEmpty(request.ReleaseDate))
+        {
+            releaseDate = DateTime.ParseExact(
+                request.ReleaseDate,
+                "dd/MM/yyyy",
+                CultureInfo.InvariantCulture
+            );
+            releaseDate = DateTime.SpecifyKind(releaseDate.Value, DateTimeKind.Utc);
+        }
         var game = new Game
         {
             Title = request.Title,
             Description = request.Description,
-            ReleaseDate = request.ReleaseDate,
+            ReleaseDate = releaseDate,
             Price = request.Price
         };
 

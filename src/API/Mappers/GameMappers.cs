@@ -22,15 +22,10 @@ namespace GameService.Mappers
 
         public static CommandCreateGame ToCommand(this CreateGameDto dto)
         {
-            if (!DateTime.TryParseExact(dto.ReleaseDate, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
-                throw new ArgumentException("Invalid date format. Use dd/MM/yyyy");
-
-            parsedDate = DateTime.SpecifyKind(parsedDate, DateTimeKind.Utc);
-            
             return new CommandCreateGame(
                 dto.Title,
                 dto.Description,
-                parsedDate,
+                dto.ReleaseDate,
                 dto.Price
             );
         }

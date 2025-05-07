@@ -4,12 +4,8 @@ namespace GameService.Application.Features.Games.DTO;
 
 public class CreateGameDto
 {
-    [Required]
-    [MaxLength(50, ErrorMessage = "Title cannot max than {1} characters")]
     public string Title { get; set; } = string.Empty;
-    [MaxLength(100, ErrorMessage = "Description cannot max than {1} characters")]
     public string Description { get; set; } = string.Empty;
-    public string ReleaseDate { get; set; }
-    [Range(0.001, double.MaxValue, ErrorMessage = "Price cannot negative")]
+    public string? ReleaseDate { get; set; }
     public decimal Price { get; set; }
 }
