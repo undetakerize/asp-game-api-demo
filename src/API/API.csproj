@@ -11,6 +11,8 @@
         <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
         <PackageReference Include="Confluent.Kafka" Version="2.10.0" />
         <PackageReference Include="EFCore.NamingConventions" Version="9.0.0" />
+        <PackageReference Include="FluentValidation" Version="12.0.0" />
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
         <PackageReference Include="Lombok.NET" Version="2.4.1" />
         <PackageReference Include="MediatR" Version="12.5.0" />
         <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
@@ -32,8 +34,6 @@
 
     <ItemGroup>
       <Folder Include="API\" />
-      <Folder Include="Application\Common\" />
-      <Folder Include="Infrastructure\Configuration\" />
     </ItemGroup>
 
 </Project>

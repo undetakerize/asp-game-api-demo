@@ -1,4 +1,5 @@
 using System.Reflection;
+using GameService.Application;
 using GameService.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -90,6 +91,8 @@ builder.Services.AddAuthentication(option =>
             System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"]))
     });
 
+// Extension Validation Behavior
+builder.Services.AddValidationBehaviorExtensions();
 // MediaTr
 builder.Services.AddMediatR(options => options.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 

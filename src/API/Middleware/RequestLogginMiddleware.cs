@@ -1,5 +1,8 @@
 using System.Diagnostics;
+using System.Net;
 using System.Text;
+using System.Text.Json;
+using FluentValidation;
 
 namespace GameService.Infrastructure.Middleware;
 
@@ -37,13 +40,13 @@ public class RequestLoggingMiddleware
 
             // Optionally enable request body logging (consider security implications)
             // await LogRequestBody(context.Request);
-            
+
             // Call the next middleware in the pipeline
             await _next(context);
-            
+
             // Calculate duration
             var duration = DateTime.UtcNow - startTime;
-            
+
             // Log the response details with success
             _logger.LogInformation(
                 "Response {StatusCode} for {RequestMethod} {RequestPath} completed in {Duration}ms - RequestId: {RequestId}",
@@ -53,11 +56,30 @@ public class RequestLoggingMiddleware
                 duration.TotalMilliseconds,
                 requestId);
         }
+        catch (ValidationException ex)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+            context.Response.ContentType = "application/json";
+
+            var response = new
+            {
+                message = "Validation failed",
+                errors = ex.Errors.Select(e => new 
+                {
+                    e.PropertyName,
+                    e.ErrorMessage,
+                    fieldName = e.PropertyName.ToLower()
+                })
+            };
+
+            var json = JsonSerializer.Serialize(response);
+            await context.Response.WriteAsync(json);
+        }
         catch (Exception ex)
         {
             // Calculate duration
             var duration = DateTime.UtcNow - startTime;
-            
+
             // Log the exception
             _logger.LogError(
                 ex,
@@ -67,7 +89,7 @@ public class RequestLoggingMiddleware
                 duration.TotalMilliseconds,
                 ex.Message,
                 requestId);
-                
+
             throw; // Re-throw to let exception middleware handle it
         }
     }
