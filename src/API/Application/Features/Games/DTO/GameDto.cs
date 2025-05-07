@@ -1,10 +1,8 @@
-using Lombok.NET;
 using ReviewDto = GameService.Application.Features.Reviews.DTO.ReviewDto;
 
 namespace GameService.Application.Features.Games.DTO
 {
-    [With]
-    public partial class GameDto
+    public class GameDto
     {
         public int Id;
         public string Title;

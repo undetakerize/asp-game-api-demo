@@ -1,9 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using Lombok.NET;
 
 namespace GameService.Application.Common.Account;
 
-[With]
 public partial class RegisterAccountDto
 {
     [Required]

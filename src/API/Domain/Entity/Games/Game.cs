@@ -1,11 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using GameService.Domain.Entity.GameReviews;
-using Lombok.NET;
 
 namespace GameService.Domain.Entity.Games
 {
-    [With]
     public partial class Game
     {
         [Key]

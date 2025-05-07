@@ -1,8 +1,5 @@
-using Lombok.NET;
-
 namespace GameService.Helpers.Games;
 
-[With]
 public partial class SearchQueryGame
 {
     public string? Title { get; set; } = null;

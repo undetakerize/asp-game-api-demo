@@ -1,8 +1,6 @@
-using Lombok.NET;
 
 namespace GameService.Application.Features.Reviews.DTO;
 
-[With]
 public partial class ReviewDto
 {
     public int Id { get; set; }

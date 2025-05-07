@@ -1,10 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using Lombok.NET;
 
 namespace GameService.Application.Features.Games.DTO;
 
-[With]
-[AllArgsConstructor]
 public partial class UpdateGameDto
 {
     public string Title;

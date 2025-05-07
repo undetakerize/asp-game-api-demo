@@ -11,13 +11,14 @@ namespace GameService.Mappers
     {
         public static GameDto ToGameDto(this Game gameModel)
         {
-            var gameDto = new DTO_GameDto();
-            gameDto.WithId(gameModel.Id);
-            gameDto.WithTitle(gameModel.Title);
-            gameDto.WithDescription(gameModel.Description);
-            gameDto.WithPrice(gameModel.Price);
-            gameDto.WithReviews(gameModel.GameReviews.Select(r=> r.Review.ToReviewDto()).ToList());
-            return gameDto;
+            return new GameDto
+            {
+                Id = gameModel.Id,
+                Title = gameModel.Title,
+                Description = gameModel.Description,
+                Price = gameModel.Price,
+                Reviews = gameModel.GameReviews.Select(r => r.Review.ToReviewDto()).ToList()
+            };
         }
 
         public static CommandCreateGame ToCommand(this CreateGameDto dto)
