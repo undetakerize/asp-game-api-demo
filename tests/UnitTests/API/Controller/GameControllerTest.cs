@@ -8,6 +8,7 @@ using GameService.Application.Interfaces.Games;
 using GameService.Domain.Entity.Games;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 
@@ -20,6 +21,7 @@ public class GameControllerTest
 
     private Mock<IMediator> _mockMediator = null!;
     private Mock<IGameEventProducer> _mockGameEventProducer = null!;
+    private Mock<ILogger<GameController>> _mockLogger = null!;
     private GameController _controller = null!;
 
     [SetUp]
@@ -27,8 +29,8 @@ public class GameControllerTest
     {
         _mockMediator = new Mock<IMediator>();
         _mockGameEventProducer = new Mock<IGameEventProducer>();
-        
-        _controller = new GameController(_mockMediator.Object, _mockGameEventProducer.Object);
+        _mockLogger = new Mock<ILogger<GameController>>();
+        _controller = new GameController(_mockMediator.Object, _mockGameEventProducer.Object, _mockLogger.Object);
     }
     
     [Test]
