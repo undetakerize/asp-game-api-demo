@@ -27,6 +27,7 @@ This is using ASP .NET Core With:
  - Implemented Unit test with [Moq](https://www.nuget.org/packages/moq/), [NUnit](https://www.nuget.org/packages/nunit), [Ef Core InMemory](https://www.nuget.org/packages/microsoft.entityframeworkcore.inmemory).
  - Implemented [Confluent Kafka](https://www.nuget.org/packages/confluent.kafka/) with Pre-Configured Base for produce other service or even consume by this apps.
  - Using validation with [FluentValidation](https://www.nuget.org/packages/FluentValidation) , and behaviors [FluentValidationExtension](https://www.nuget.org/packages/fluentvalidation.dependencyinjectionextensions/)
+**Notes** : Also this project runs on SDK 8. Make sure you have it!.
 
 ## The Structure 
 The structure of this using clean architecture with principal CQRS.
