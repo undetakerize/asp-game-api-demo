@@ -1,25 +1,34 @@
-using System.Text.Json;
 using Confluent.Kafka;
+using GameService.Application.Features.Reviews.Command;
 using GameService.Application.Features.Reviews.DTO;
 using GameService.Application.Interfaces;
 using GameService.Application.Interfaces.Reviews;
+using GameService.Infrastructure.Common;
 using GameService.Infrastructure.Kafka;
+using GameService.Mappers;
+using MediatR;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using JsonException = System.Text.Json.JsonException;
+using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 
 namespace GameService.Infrastructure.Service.Kafka.Reviews;
 
 public sealed class ReviewEventConsumer : IReviewEventConsumer, IDisposable
 {
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly KafkaSettings _settings;
     private readonly ILogger<ReviewEventConsumer> _logger;
     private readonly IConsumer<string, string> _consumer;
     private bool _disposed;
 
     public ReviewEventConsumer(
+        IServiceScopeFactory scopeFactory,
         IKafkaClientFactory clientFactory,
         IOptions<KafkaSettings> settings,
         ILogger<ReviewEventConsumer> logger)
     {
+        _scopeFactory = scopeFactory;
         _settings = settings.Value;
         _logger = logger;
         _consumer = clientFactory.CreateConsumer();
@@ -49,7 +58,10 @@ public sealed class ReviewEventConsumer : IReviewEventConsumer, IDisposable
                         continue;
                     }
 
-                    var reviewEvent = JsonSerializer.Deserialize<SyncConsumerReviewDto>(consumeResult.Message.Value);
+                    var reviewEvent = JsonConvert.DeserializeObject<SyncConsumerReviewDto>(
+                        consumeResult.Message.Value,
+                        NewtonsoftJsonSettings.CaseInsensitive);
+                    
                     if (reviewEvent != null)
                     {
                         await ConsumeReviewAsync(reviewEvent);
@@ -86,21 +98,24 @@ public sealed class ReviewEventConsumer : IReviewEventConsumer, IDisposable
             _logger.LogWarning("Review event was null.");
             return;
         }
+        
+        using var scope = _scopeFactory.CreateScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
         switch (dto.Action.ToLower())
         {
             case "create":
-                _logger.LogInformation("Handling 'create' action for Review ID: {ReviewId}", dto.Review?.Id);
+                _logger.LogInformation("Handling {Action} action for Review ID: {@Dto}", dto.Action, JsonConvert.SerializeObject(dto));
+                var gameReviewDto = dto.ToCreateReviewDto().ToReviewFromCreateDto(dto.GameId);
+                await mediator.Send(new CommandCreateReview(gameReviewDto.gameReview));
                 break;
             default:
                 _logger.LogWarning("Unknown action type: {Action}", dto.Action);
                 return;
         }
-
         await Task.Delay(500); // Simulate async processing
-        _logger.LogInformation("Finished processing review event for Review ID: {ReviewId}", dto.Review?.Id);
+        _logger.LogInformation("Finished processing review event for Review ID: {@Dto}", JsonConvert.SerializeObject(dto));
     }
-
     public void Dispose()
     {
         if (!_disposed)
