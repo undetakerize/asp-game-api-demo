@@ -10,7 +10,6 @@ using MediatR;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using JsonException = System.Text.Json.JsonException;
-using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 
 namespace GameService.Infrastructure.Service.Kafka.Reviews;
 
@@ -21,6 +20,11 @@ public sealed class ReviewEventConsumer : IReviewEventConsumer, IDisposable
     private readonly ILogger<ReviewEventConsumer> _logger;
     private readonly IConsumer<string, string> _consumer;
     private bool _disposed;
+    
+    // Configuration constants
+    private const int ConsumeTimeoutMs = 1000;
+    private const int ShortDelayMs = 100;
+    private const int ErrorRetryDelayMs = 1000;
 
     public ReviewEventConsumer(
         IServiceScopeFactory scopeFactory,
@@ -34,60 +38,131 @@ public sealed class ReviewEventConsumer : IReviewEventConsumer, IDisposable
         _consumer = clientFactory.CreateConsumer();
     }
 
-    /// <summary>
-    /// Starts consuming ReviewEvent messages from Kafka using a cancellation token.
-    /// Should be called from a BackgroundService or hosted environment.
-    /// </summary>
     public async Task StartConsumingAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Kafka consumer subscribing to topic: {Topic}", _settings.Topics.ReviewCreatedEvent);
+        _logger.LogInformation("Starting Kafka consumer for topic: {Topic}", _settings.Topics.ReviewCreatedEvent);
         _consumer.Subscribe(_settings.Topics.ReviewCreatedEvent);
 
         try
         {
-            while (!cancellationToken.IsCancellationRequested && !_disposed)
-            {
-                try
-                {
-                    var consumeResult = _consumer.Consume(cancellationToken);
-
-                    if (consumeResult.IsPartitionEOF)
-                    {
-                        _logger.LogInformation("Reached end of partition: {Topic} [Partition: {Partition}, Offset: {Offset}]",
-                            consumeResult.Topic, consumeResult.Partition, consumeResult.Offset);
-                        continue;
-                    }
-
-                    var reviewEvent = JsonConvert.DeserializeObject<SyncConsumerReviewDto>(
-                        consumeResult.Message.Value,
-                        NewtonsoftJsonSettings.CaseInsensitive);
-                    
-                    if (reviewEvent != null)
-                    {
-                        await ConsumeReviewAsync(reviewEvent);
-                    }
-                    else
-                    {
-                        _logger.LogWarning("Received invalid review event message.");
-                    }
-                }
-                catch (ConsumeException ex)
-                {
-                    _logger.LogError(ex, "Kafka consume error: {Reason}", ex.Error.Reason);
-                }
-                catch (JsonException jsonEx)
-                {
-                    _logger.LogError(jsonEx, "Error deserializing review event.");
-                }
-            }
+            await RunConsumerLoop(cancellationToken);
         }
-        catch (OperationCanceledException ex)
+        catch (OperationCanceledException e)
         {
-            _logger.LogInformation(ex, "Kafka consumer stopped due to cancellation.");
+            _logger.LogInformation(e, "Kafka consumer stopped due to cancellation");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unhandled exception in Kafka consumer");
+            throw;
         }
         finally
         {
-            _consumer.Close();
+            SafeCloseConsumer();
+        }
+    }
+
+    private async Task RunConsumerLoop(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested && !_disposed)
+        {
+            try
+            {
+                var consumeResult = TryConsumeMessage(cancellationToken);
+                if (consumeResult == null) continue;
+                
+                if (consumeResult.IsPartitionEOF)
+                {
+                    LogPartitionEnd(consumeResult);
+                    continue;
+                }
+
+                await ProcessMessage(consumeResult);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                HandleConsumerException(ex);
+                await Task.Delay(ErrorRetryDelayMs, cancellationToken);
+            }
+        }
+    }
+
+    private ConsumeResult<string, string>? TryConsumeMessage(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = _consumer.Consume(ConsumeTimeoutMs);
+            
+            if (result == null)
+            {
+                Task.Delay(ShortDelayMs, cancellationToken).Wait(cancellationToken);
+                return null;
+            }
+            
+            return result;
+        }
+        catch (ConsumeException ex) when (ex.Error.Code == ErrorCode.Local_TimedOut)
+        {
+            // Expected timeout when no messages available
+            Task.Delay(ShortDelayMs, cancellationToken).Wait(cancellationToken);
+            return null;
+        }
+    }
+
+    private async Task ProcessMessage(ConsumeResult<string, string> consumeResult)
+    {
+        _logger.LogDebug("Processing message: [Partition: {Partition}, Offset: {Offset}]",
+            consumeResult.Partition, consumeResult.Offset);
+
+        var reviewEvent = JsonConvert.DeserializeObject<SyncConsumerReviewDto>(
+            consumeResult.Message.Value,
+            NewtonsoftJsonSettings.CaseInsensitive);
+        
+        if (reviewEvent != null)
+        {
+            await ConsumeReviewAsync(reviewEvent);
+        }
+        else
+        {
+            _logger.LogWarning("Received invalid review event message");
+        }
+        
+        CommitOffset(consumeResult);
+    }
+
+    private void CommitOffset(ConsumeResult<string, string> consumeResult)
+    {
+        try
+        {
+            _consumer.Commit(consumeResult);
+            _logger.LogDebug("Committed offset: [Partition: {Partition}, Offset: {Offset}]",
+                consumeResult.Partition, consumeResult.Offset);
+        }
+        catch (KafkaException ex)
+        {
+            _logger.LogError(ex, "Error committing offset");
+        }
+    }
+
+    private void LogPartitionEnd(ConsumeResult<string, string> consumeResult)
+    {
+        _logger.LogInformation("Reached end of partition: [Partition: {Partition}, Offset: {Offset}]",
+            consumeResult.Partition, consumeResult.Offset);
+    }
+
+    private void HandleConsumerException(Exception ex)
+    {
+        if (ex is ConsumeException kafkaEx)
+        {
+            _logger.LogError(ex, "Kafka consume error: {Reason}", kafkaEx.Error.Reason);
+        }
+        else if (ex is JsonException)
+        {
+            _logger.LogError(ex, "Error deserializing review event");
+        }
+        else
+        {
+            _logger.LogError(ex, "Unexpected error during message processing");
         }
     }
 
@@ -95,33 +170,65 @@ public sealed class ReviewEventConsumer : IReviewEventConsumer, IDisposable
     {
         if (dto == null)
         {
-            _logger.LogWarning("Review event was null.");
+            _logger.LogWarning("Review event was null");
             return;
         }
         
         using var scope = _scopeFactory.CreateScope();
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
-        switch (dto.Action.ToLower())
+        try
         {
-            case "create":
-                _logger.LogInformation("Handling {Action} action for Review ID: {@Dto}", dto.Action, JsonConvert.SerializeObject(dto));
+            if (dto.Action.Equals("create", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogInformation("Processing review creation for : {@Dto}", JsonConvert.SerializeObject(dto));
                 var gameReviewDto = dto.ToCreateReviewDto().ToReviewFromCreateDto(dto.GameId);
                 await mediator.Send(new CommandCreateReview(gameReviewDto.gameReview));
-                break;
-            default:
-                _logger.LogWarning("Unknown action type: {Action}", dto.Action);
-                return;
+                _logger.LogInformation("Successfully processed review: {ReviewId}", gameReviewDto.review.Id);
+            }
+            else
+            {
+                _logger.LogWarning("Unknown action type: {Action} for review: {@Dto}", 
+                    dto.Action, dto);
+            }
         }
-        await Task.Delay(500); // Simulate async processing
-        _logger.LogInformation("Finished processing review event for Review ID: {@Dto}", JsonConvert.SerializeObject(dto));
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing review");
+            throw;
+        }
     }
+
+    private void SafeCloseConsumer()
+    {
+        try
+        {
+            _logger.LogInformation("Closing Kafka consumer");
+            _consumer.Close();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error closing Kafka consumer");
+        }
+    }
+
     public void Dispose()
     {
         if (!_disposed)
         {
-            _consumer.Dispose();
-            _disposed = true;
+            try
+            {
+                _consumer.Close();
+                _consumer.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error disposing Kafka consumer");
+            }
+            finally
+            {
+                _disposed = true;
+            }
         }
     }
 }
