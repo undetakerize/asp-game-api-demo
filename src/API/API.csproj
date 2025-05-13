@@ -33,6 +33,7 @@
 
     <ItemGroup>
       <Folder Include="API\" />
+      <Folder Include="Application\Features\Account\Query\" />
     </ItemGroup>
 
 </Project>

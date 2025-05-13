@@ -1,6 +1,7 @@
 using System.Reflection;
 using GameService.Application;
 using GameService.Application.Interfaces;
+using GameService.Application.Interfaces.Account;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,7 @@ using GameService.Domain.Users;
 using GameService.Infrastructure.Data;
 using GameService.Infrastructure.Kafka;
 using GameService.Infrastructure.Middleware;
-using GameService.Infrastructure.Service;
+using GameService.Infrastructure.Service.Identity;
 using GameService.Service;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -107,6 +108,7 @@ builder.Services.Configure<HostOptions>(options =>
 
 // scope repository
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUserIdentity, UserIdentityService>();
 builder.Services.AddHealthChecks().AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!);
 
 var app = builder.Build();

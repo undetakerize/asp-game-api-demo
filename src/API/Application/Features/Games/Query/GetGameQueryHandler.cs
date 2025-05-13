@@ -1,14 +1,17 @@
 using System.Reflection;
+using GameService.Application.Common;
+using GameService.Application.Features.Games.DTO;
 using GameService.Domain.Entity.Games;
 using GameService.Infrastructure.Data;
+using GameService.Mappers;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace GameService.Application.Features.Games.Query;
 
-public class GetGameQueryHandler(AppDbContext context) : IRequestHandler<GetGameQuery, List<Game>>
+public class GetGameQueryHandler(AppDbContext context) : IRequestHandler<GetGameQuery, Result<PagedResult<GameDto>>>
 {
-    public async Task<List<Game>> Handle(GetGameQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PagedResult<GameDto>>> Handle(GetGameQuery request, CancellationToken cancellationToken)
     {
         var query = context.Game
             .Include(g => g.GameReviews)
@@ -54,6 +57,24 @@ public class GetGameQueryHandler(AppDbContext context) : IRequestHandler<GetGame
                 }
             }
         }
-        return await query.ToListAsync(cancellationToken);
+        
+        var totalCount = await query.CountAsync(cancellationToken);
+        var totalPages = (int)Math.Ceiling(totalCount / (double)search.PageSize);
+        var data = await query
+            .Skip((search.Page - 1) * search.PageSize)
+            .Take(search.PageSize)
+            .Select(g => g.ToGameDto())
+            .ToListAsync(cancellationToken);
+
+        var pagedResult = new PagedResult<GameDto>
+        {
+            TotalCount = totalCount,
+            TotalPages = totalPages,
+            CurrentPage = search.Page,
+            PageSize = search.PageSize,
+            Data = data
+        };
+        
+        return Result<PagedResult<GameDto>>.Success(pagedResult);
     }
 }

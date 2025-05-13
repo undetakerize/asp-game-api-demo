@@ -1,6 +1,6 @@
 
 using Confluent.Kafka;
-using FluentValidation;
+using GameService.Application.Common;
 using GameService.Application.Features.Games.Command;
 using GameService.Application.Features.Games.DTO;
 using GameService.Application.Features.Games.Query;
@@ -37,20 +37,8 @@ public class GameController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid) return BadRequest();
-        var game = await _mediator.Send(new GetGameQuery(searchQueryGame), cancellationToken);
-        
-        var totalCount = game.Count;
-        var totalPages = (int)Math.Ceiling((double)game.Count / pageSize);
-        game = game.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-        var result = new
-        {
-            TotalCount = totalCount,
-            TotalPages = totalPages,
-            CurrentPage = page,
-            PageSize = pageSize,
-            Data = game.Select(g => g.ToGameDto())
-        };
-        return Ok(result); 
+        var result = await _mediator.Send(new GetGameQuery(searchQueryGame), cancellationToken);
+        return result.ToHttpResult();
     }
     
     [HttpGet("{id:int}")]
